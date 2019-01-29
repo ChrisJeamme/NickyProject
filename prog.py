@@ -2,6 +2,7 @@ reduce_item_number = 900 #1 = fullset ; 10 = 1/10 of the set
 
 ################## IMPORTS ##################
 
+import lem
 from numpy import genfromtxt
 import pandas as pd
 import numpy as np
@@ -9,8 +10,12 @@ import operator, re, string, codecs, nltk
 from statistics import mean
 from sklearn.model_selection import train_test_split
 from nltk.tokenize import word_tokenize
-from nltk.stem import PorterStemmer
+from nltk import pos_tag
+from nltk.stem import PorterStemmer, WordNetLemmatizer
+from nltk.corpus import wordnet
 nltk.download('punkt')
+nltk.download('wordnet')
+nltk.download('averaged_perceptron_tagger')
 from xml.dom import minidom
 from string import punctuation
 from enum import Enum
@@ -164,7 +169,11 @@ class ArticlePredictorBase:
             tokens = word_tokenize(text)
             before_stop = len(tokens)
             tokens = [i for i in tokens if not i in ENGLISH_STOP_WORDS]
-            
+
+            #Lemmatization
+            tagged = pos_tag(tokens)
+            tokens = list(map(lem.lemmatize_tagged_token, tagged))
+
             #Feature adding
             deleted_stop_words = before_stop/len(tokens)
             the_set['deleted_stop_words'][i] = before_stop/len(tokens)

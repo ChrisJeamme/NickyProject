@@ -1,3 +1,4 @@
+from nltk.stem import WordNetLemmatizer
 from nltk.corpus import wordnet
 
 def get_wordnet_pos(treebank_tag):
@@ -13,6 +14,7 @@ def get_wordnet_pos(treebank_tag):
         return None 
 
 def lemmatize_tagged_token(token):
+    lemmatizer = WordNetLemmatizer()
     word = token[0]
     tag = token[1]
     wntag = get_wordnet_pos(tag)
@@ -21,4 +23,3 @@ def lemmatize_tagged_token(token):
     else:
         return lemmatizer.lemmatize(word, pos=wntag) 
     
-# tokens = list(map(lemmatize_tagged_token, tagged))
