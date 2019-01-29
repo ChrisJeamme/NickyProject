@@ -44,19 +44,7 @@ def get_xml_text(filename):
         text = ""
     return text
 
-def csv_convert(self,path):
-    try:
-        data = pd.read_csv(path,delimiter=',')
-        filenames = data.iloc[:,1]
-        X = []
-        for fn in filenames:
-            X.append(get_xml_text(fn))
-        
-        y = data.iloc[:,2]
-    except:
-        print("Error while importing testing set csv file") 
-        self.type = None
-    return X,y
+
 
 def most_common_terms(terms):
     terms_count_array = []
@@ -69,35 +57,88 @@ def most_common_terms(terms):
     return common_terms
 
 class Type(Enum):
+    NONE = 0 
     REAL_CSV_SETS = 1
     TEST_ON_TRAINING_SET = 2
     ARTICLE_SET = 3
     
     
 class DataLoader:
-
+    def csv_convert(self,path):
+        
+        data = pd.read_csv(path,delimiter=',')
+        filenames = data.iloc[:,1]
+        X = []
+        for fn in filenames:
+            X.append(get_xml_text(fn))
+        
+        y = data.iloc[:,2]
+        return np.asarray(X),y
     ############
-    def __init__(self,test_type,path_to_csv_train,path_to_csv_test):
-        if Type.ARTICLE_SET == test_type:
-            
-            self.X_train,self.y_train = csv_convert(path_to_csv_train)
-            self.X_test,self.y_test = csv_convert(path_to_csv_test)
-            self.type = test_type
+    def __init__(self,test_type):
+        self.type = test_type
+
+    def fit(self,path_to_csv_train,path_to_csv_test):
+        if Type.ARTICLE_SET == self.type:
+            self.X_train,self.y_train = self.csv_convert(path_to_csv_train)
+            self.X_test,self.y_test = self.csv_convert(path_to_csv_test)
             
         else:
-            self.type = None
+            self.type = Type.NONE
             print('Error type')
 
     def get_data(self):
         return self.X_train,self.y_train,self.X_test,self.y_test
-    
     
     def get_train(self):
         return self.X_train,self.y_train
     
     def get_test(self):
         return self.X_test,self.y_test
+    
+    
 
-dataload = DataLoader(Type.ARTICLE_SET,"project/project/train.csv",None)
-dataload
+dataload = DataLoader(Type.ARTICLE_SET)
+dataload.fit("./project/project/train.csv","./project/project/test.csv")
 
+X_train,y_train,X_test,y_test = dataload.get_data()
+print(len(y_train))
+n=4300
+X_test=X_train[n:]
+X_train=X_train[0:n]
+
+y_test=y_train[n:]
+y_train=y_train[0:n]
+
+from sklearn.feature_extraction.text import CountVectorizer
+count_vect = CountVectorizer()
+X_train_counts = count_vect.fit_transform(X_train)
+
+print(X_train_counts[0])
+print(X_train_counts.shape)
+print(count_vect.vocabulary_.get(u'dlrs'))
+
+
+from sklearn.feature_extraction.text import TfidfTransformer
+tf_transformer = TfidfTransformer(use_idf=False).fit(X_train_counts)
+X_train_tf = tf_transformer.transform(X_train_counts)
+print(X_train_tf[0])
+
+
+x_count = count_vect.transform(X_test)
+x_tf = tf_transformer.transform(x_count)
+print(y_test)
+
+from sklearn.linear_model import SGDClassifier
+from sklearn.pipeline import Pipeline
+text_clf = Pipeline([
+     ('vect', CountVectorizer()),
+     ('tfidf', TfidfTransformer()),
+     ('clf', SGDClassifier(loss='squared_hinge', penalty='l2',
+                           alpha=1e-3, random_state=42,
+                           max_iter=10, tol=None)),])
+
+text_clf.fit(X_train, y_train) 
+    
+predicted = text_clf.predict(X_test)
+np.mean(predicted == y_test)     
