@@ -13,6 +13,7 @@ from sklearn.linear_model import SGDClassifier
 from sklearn.pipeline import Pipeline
 
 from sklearn.feature_extraction.text import TfidfTransformer,CountVectorizer
+from sklearn.decomposition import PCA
 
 dataload = DataLoader(Type.ARTICLE_SET)
 dataload.fit("./project/project/train.csv","./project/project/test.csv")
@@ -47,38 +48,35 @@ def pipelinize(function, active=True):
 
 def rem_num(X):
     for x in X:
-        x = re.sub('[0-9]*', '#num', x)
+        x = re.sub('[0-9]*,[0-9]*', 'anumber', x)
+        x = re.sub('[0-9]*.[0-9]*', 'anumber', x)
+        x = re.sub('[0-9]*', 'anumber', x)
     return X
 
 #from sklearn_helpers import train_test_and_evaluate
 
 tokenizer = nltk.casual.TweetTokenizer(preserve_case=False, reduce_len=True)
-count_vect = CountVectorizer(tokenizer=tokenizer.tokenize)     
-classifier = SGDClassifier(loss='squared_hinge', penalty='l2',
+count_vect = CountVectorizer(tokenizer=tokenizer.tokenize,stop_words = 'english')     
+classifier = SGDClassifier(loss='hinge', penalty='l2',
                            alpha=1e-3, random_state=42,
                            max_iter=10, tol=None)
-classifier = LogisticRegression()
-
+pca = PCA(n_components=10)
 
 text_clf = Pipeline([
      ('rem_num', pipelinize(rem_num)),
      ('vect', count_vect),
      ('tfidf', TfidfTransformer()),
+     ('pca', pca),
      ('clf', classifier),])
 
 # print(y_test)
 
-from sklearn.linear_model import SGDClassifier
 from sklearn.pipeline import Pipeline, make_pipeline
 
-text_clf = Pipeline([
-     ('vect', CountVectorizer(strip_accents="ascii", lowercase=True, stop_words="english")),
-     ('tfidf', TfidfTransformer(norm="l1", smooth_idf=True)),
-     ('clf', SGDClassifier(loss='squared_hinge', penalty='l2',
-                           alpha=1e-3, random_state=42,
-                           max_iter=1000, tol=None, epsilon='huber')),])
 
 text_clf.fit(X_train, y_train) 
+
+print(count_vect.get_feature_names())
 #confusion_matrix = train_test_and_evaluate(text_clf, X_train, y_train, X_test, y_test)
 predicted = text_clf.predict(X_test)
 print(np.mean(predicted == y_test))

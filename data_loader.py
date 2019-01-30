@@ -73,7 +73,7 @@ class DataLoader:
             X.append(get_xml_text(fn))
         
         y = data.iloc[:,2]
-        return np.asarray(X),y
+        return np.asarray(X),np.asarray(y)
     ############
     def __init__(self,test_type):
         self.type = test_type
