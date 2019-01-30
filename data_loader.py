@@ -30,7 +30,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 reduce_item_number = 900 #1 = fullset ; 10 = 1/10 of the set
 
 def get_xml_text(filename):
-    xmldoc = minidom.parse('project/project/data/1.xml')
+    xmldoc = minidom.parse('project/project/data/'+filename)
     itemlist = xmldoc.getElementsByTagName('BODY')
 
     #Verification

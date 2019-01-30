@@ -18,14 +18,14 @@ from sklearn.feature_extraction.text import TfidfTransformer,CountVectorizer
 dataload = DataLoader(Type.ARTICLE_SET)
 dataload.fit("./project/project/train.csv","./project/project/test.csv")
 
-X_train,y_train,X_test,y_test = dataload.get_data()
+X,y,X_test,y_test = dataload.get_data()
 # print(len(y_train))
 n=4300
-X_test=X_train[n:]
-X_train=X_train[0:n]
+X_train=X[0:n]
+y_train=y[0:n]
 
-y_test=y_train[n:]
-y_train=y_train[0:n]
+X_test=X[n:]
+y_test=y[n:]
 
 count_vect = CountVectorizer()
 X_train_counts = count_vect.fit_transform(X_train)
@@ -47,17 +47,27 @@ def pipelinize(function, active=True):
 
 
 def rem_num(x):
+    
+    x = x.replace('\n',' ')
     x = re.sub('\d+,\d+|\d+.\d+|\d+', '#num', x)
+    x = x.replace('/','')
+    x = x.replace('+','')
+    x = x.replace('.','')
+    x = x.replace(',','')
+    x = re.sub(r'(\#num)+', '#num', x)
+    x = re.sub(r'[Nn]ew[ -][Yy]ork','NY',x)
     return x
+
+
 
 #from sklearn_helpers import train_test_and_evaluate
 
 tokenizer = nltk.casual.TweetTokenizer(preserve_case=False, reduce_len=True)
-count_vect = CountVectorizer(tokenizer=tokenizer.tokenize,stop_words='english')     
+count_vect = CountVectorizer(tokenizer=tokenizer.tokenize,stop_words='english',ngram_range=(1, 3),min_df=1,max_features = 20)
 classifier = SGDClassifier(loss='hinge', penalty='l2',
                            alpha=1e-3, random_state=42,
-                           max_iter=10, tol=None)
-classifier = MultinomialNB()
+                           max_iter=5, tol=None)
+#classifier = MultinomialNB()
 
 text_clf = Pipeline([
      ('rem_num', pipelinize(rem_num)),
@@ -67,16 +77,15 @@ text_clf = Pipeline([
 
 # print(y_test)
 from sklearn.pipeline import Pipeline, make_pipeline
-
+from sklearn import metrics
 
 text_clf.fit(X_train, y_train) 
 
 print(count_vect.get_feature_names())
 #confusion_matrix = train_test_and_evaluate(text_clf, X_train, y_train, X_test, y_test)
 predicted = text_clf.predict(X_test)
+print(metrics.confusion_matrix(predicted,y_test))
 print(np.mean(predicted == y_test))
-
-
 # from sklearn.cross_validation import cross_val_score
 # from sklearn.neighbors import KNeighborsClassifier
 # from sklearn.preprocessing import StandardScaler
