@@ -6,7 +6,16 @@ import numpy as np
 import re
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.linear_model import LogisticRegression
+import lem
+from nltk import pos_tag
+from nltk.tokenize import word_tokenize
 import nltk
+nltk.download('averaged_perceptron_tagger')
+import nltk
+nltk.download('wordnet')
+
+import en_core_web_sm
+nlp = en_core_web_sm.load()
 
 from sklearn.preprocessing import FunctionTransformer
 from sklearn.linear_model import SGDClassifier
@@ -61,9 +70,37 @@ def sub(x):
 
 
 #from sklearn_helpers import train_test_and_evaluate
+import spacy
+# after install spacy run following commands
+# python -m spacy download en
+# python -m spacy download en_core_web_md
+# python -m spacy link en_core_web_md en 
 
-tokenizer = nltk.casual.TweetTokenizer(preserve_case=False, reduce_len=True)
-count_vect = CountVectorizer(tokenizer=tokenizer.tokenize,stop_words='english'
+
+
+from html import unescape
+# create a dataframe from a word matrix
+def wm2df(wm, feat_names):
+    
+    # create an index for each row
+    doc_names = ['Doc{:d}'.format(idx) for idx, _ in enumerate(wm)]
+    df = pd.DataFrame(data=wm.toarray(), index=doc_names,
+                      columns=feat_names)
+    return(df)
+# create a spaCy tokenizer
+spacy.load('en')
+lemmatizer = spacy.lang.en.English()
+
+
+# tokenize the doc and lemmatize its tokens
+def my_tokenizer(text):
+    tokens = word_tokenize(text)
+    tagged = pos_tag(tokens)
+    tokens = list(map(lem.lemmatize_tagged_token, tagged))
+    return(tokens)
+
+#tokenizer = nltk.casual.TweetTokenizer(preserve_case=False, reduce_len=True)
+count_vect = CountVectorizer(tokenizer=my_tokenizer,stop_words='english'
                              ,ngram_range=(1, 2)
                              ,min_df=1
                              #,max_features = 20
