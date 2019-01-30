@@ -10,10 +10,10 @@ import nltk
 
 from sklearn.preprocessing import FunctionTransformer
 from sklearn.linear_model import SGDClassifier
+from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
 
 from sklearn.feature_extraction.text import TfidfTransformer,CountVectorizer
-from sklearn.decomposition import PCA
 
 dataload = DataLoader(Type.ARTICLE_SET)
 dataload.fit("./project/project/train.csv","./project/project/test.csv")
@@ -46,31 +46,26 @@ def pipelinize(function, active=True):
 
 
 
-def rem_num(X):
-    for x in X:
-        x = re.sub('[0-9]*,[0-9]*', 'anumber', x)
-        x = re.sub('[0-9]*.[0-9]*', 'anumber', x)
-        x = re.sub('[0-9]*', 'anumber', x)
-    return X
+def rem_num(x):
+    x = re.sub('\d+,\d+|\d+.\d+|\d+', '#num', x)
+    return x
 
 #from sklearn_helpers import train_test_and_evaluate
 
 tokenizer = nltk.casual.TweetTokenizer(preserve_case=False, reduce_len=True)
-count_vect = CountVectorizer(tokenizer=tokenizer.tokenize,stop_words = 'english')     
+count_vect = CountVectorizer(tokenizer=tokenizer.tokenize,stop_words='english')     
 classifier = SGDClassifier(loss='hinge', penalty='l2',
                            alpha=1e-3, random_state=42,
                            max_iter=10, tol=None)
-pca = PCA(n_components=10)
+classifier = MultinomialNB()
 
 text_clf = Pipeline([
      ('rem_num', pipelinize(rem_num)),
      ('vect', count_vect),
      ('tfidf', TfidfTransformer()),
-     ('pca', pca),
      ('clf', classifier),])
 
 # print(y_test)
-
 from sklearn.pipeline import Pipeline, make_pipeline
 
 
