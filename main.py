@@ -63,7 +63,11 @@ def rem_num(x):
 #from sklearn_helpers import train_test_and_evaluate
 
 tokenizer = nltk.casual.TweetTokenizer(preserve_case=False, reduce_len=True)
-count_vect = CountVectorizer(tokenizer=tokenizer.tokenize,stop_words='english',ngram_range=(1, 3),min_df=1,max_features = 20)
+count_vect = CountVectorizer(tokenizer=tokenizer.tokenize,stop_words='english'
+                             #,ngram_range=(1, 2)
+                             ,min_df=1
+                             #,max_features = 20
+                             )
 classifier = SGDClassifier(loss='hinge', penalty='l2',
                            alpha=1e-3, random_state=42,
                            max_iter=5, tol=None)
@@ -85,6 +89,7 @@ print(count_vect.get_feature_names())
 #confusion_matrix = train_test_and_evaluate(text_clf, X_train, y_train, X_test, y_test)
 predicted = text_clf.predict(X_test)
 print(metrics.confusion_matrix(predicted,y_test))
+print(metrics.classification_report(y_test, predicted))
 print(np.mean(predicted == y_test))
 # from sklearn.cross_validation import cross_val_score
 # from sklearn.neighbors import KNeighborsClassifier
