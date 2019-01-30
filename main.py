@@ -46,10 +46,10 @@ def pipelinize(function, active=True):
 
 
 
-def rem_num(x):
+def sub(x):
     
     x = x.replace('\n',' ')
-    x = re.sub('\d+,\d+|\d+.\d+|\d+', '#num', x)
+    x = re.sub('\d+,\d+|\d+.\d+|\d+', '#num ', x)
     x = x.replace('/','')
     x = x.replace('+','')
     x = x.replace('.','')
@@ -64,7 +64,7 @@ def rem_num(x):
 
 tokenizer = nltk.casual.TweetTokenizer(preserve_case=False, reduce_len=True)
 count_vect = CountVectorizer(tokenizer=tokenizer.tokenize,stop_words='english'
-                             #,ngram_range=(1, 2)
+                             ,ngram_range=(1, 2)
                              ,min_df=1
                              #,max_features = 20
                              )
@@ -74,7 +74,7 @@ classifier = SGDClassifier(loss='hinge', penalty='l2',
 #classifier = MultinomialNB()
 
 text_clf = Pipeline([
-     ('rem_num', pipelinize(rem_num)),
+     ('sub', pipelinize(sub)),
      ('vect', count_vect),
      ('tfidf', TfidfTransformer()),
      ('clf', classifier),])
