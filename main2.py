@@ -27,6 +27,7 @@ from sklearn.decomposition import TruncatedSVD
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neural_network  import MLPClassifier
 import xgboost as xgb
+import datetime
 
 from sklearn.model_selection import cross_val_score,cross_val_predict
 from sklearn.model_selection import ShuffleSplit
@@ -122,9 +123,12 @@ def cross_val(clf,X,y):
 #     print('Average accuracy:' + str(sum41/nb_splits))
 
 def csv_write(y_test):
-    spamwriter = csv.writer(open('test_1.csv', 'w', newline=''), delimiter=' ',quotechar='|', quoting=csv.QUOTE_MINIMAL)
-    for value in y_test:
-        spamwriter.writerow(str(value))
+    empty_test_csv = open("project/project/test.csv", 'r')
+    filename = 'project/project/test_'+str(datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))+'.csv'
+    filled_test_csv = csv.writer(open(filename, 'w', newline=''), delimiter=',',quotechar=' ', quoting=csv.QUOTE_MINIMAL)
+    for i, line in enumerate(empty_test_csv):
+        filled_test_csv.writerow(line + str(y_test[i]))
+    print("Filled test.csv was created : " + 'project/project/test_'+str(datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))+'.csv')
 
 # ----------------------#
 ### Classifier choice ###
