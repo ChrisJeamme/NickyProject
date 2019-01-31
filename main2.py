@@ -28,6 +28,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.neural_network  import MLPClassifier
 import xgboost as xgb
 import datetime
+from numpy import genfromtxt
 
 from sklearn.model_selection import cross_val_score,cross_val_predict
 from sklearn.model_selection import ShuffleSplit
@@ -120,12 +121,15 @@ def cross_val(clf,X,y):
 #     print('Average accuracy:' + str(sum41/nb_splits))
 
 def csv_write(y_test):
-    empty_test_csv = open("project/project/test.csv", 'r')
+    test_csv = pd.read_csv('project/project/test.csv','r', delimiter=",")
+
+    for i, line in enumerate(test_csv.values):
+        test_csv.at[i,'earnings'] = y_test[i]
+        
     filename = 'project/project/test_'+str(datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))+'.csv'
-    filled_test_csv = csv.writer(open(filename, 'w', newline=''), delimiter=',',quotechar=' ', quoting=csv.QUOTE_MINIMAL)
-    for i, line in enumerate(empty_test_csv):
-        filled_test_csv.writerow(line + str(y_test[i]))
+    test_csv.to_csv(path_or_buf=filename)
     print("Filled test.csv was created : " + 'project/project/test_'+str(datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))+'.csv')
+
 
 # ----------------------#
 ### Classifier choice ###
