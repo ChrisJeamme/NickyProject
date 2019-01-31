@@ -59,7 +59,7 @@ X, y, X_train, y_train, X_test, y_test = dataload.get_data()
 ### Cross-validation ###
 # ---------------------#
 
-nb_splits = 20
+nb_splits = 5
 kf = KFold(n_splits=nb_splits, shuffle=True)
 
 count_vect = CountVectorizer()
