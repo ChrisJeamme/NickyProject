@@ -77,7 +77,7 @@ def my_tokenizer(text):
     tokens = word_tokenize(text)
     tagged = pos_tag(tokens)
     tokens = list(map(lem.lemmatize_tagged_token, tagged))
-    return(tokens)
+    return(tokens) 
 
 count_vect = CountVectorizer(tokenizer=my_tokenizer
                              ,stop_words='english'
