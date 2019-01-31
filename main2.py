@@ -69,20 +69,15 @@ def pipelinize(function, active=True):
     return FunctionTransformer(list_comprehend_a_function, validate=False, kw_args={'active':active})
 
 def sub(x):
-    x = x.replace('\n',' ')
-    x = re.sub('\d+,\d+|\d+.\d+|\d+', '#num ', x)
-    x = x.replace('/','')
-    x = x.replace('+','')
-    x = x.replace('.','')
-    x = x.replace(',','')
-    x = x.replace('``','')
-    x = x.replace('"','')
-    x = x.replace('<','')
-    x = x.replace('>','')
-    x = x.replace('(','')
-    x = x.replace(')','')
-    x = x.replace('yr-ago','year ago')
-    x = re.sub(r'(\#num)+', '#num', x)
+    
+    x = x.replace('\n',' ') 
+    x = x.replace('\'s','')       
+    x = re.sub('[^A-Za-z0-9]+', ' ', x)
+    
+    x = re.sub('\d+,\d+|\d+.\d+|\d+', 'number', x)
+    x = x.replace('yr ago','year ago')
+    
+    x = re.sub(r'(number|mln|billion) (number|mln|billion)', ' number', x)
     x = re.sub(r'[Nn]ew[ -][Yy]ork','NY',x)
     return x
 
