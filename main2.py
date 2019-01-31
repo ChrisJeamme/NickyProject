@@ -37,7 +37,7 @@ from sklearn.feature_extraction.text import TfidfTransformer,CountVectorizer
 #------------------#
 ### Type of test ###
 #------------------#
-
+ 
 # type =>
 # Type.REAL_CSV_SETS = Predict the test.csv file
 # Type.TEST_ON_TRAINING_SET = Test a classifier with a kfold cross validator to get an average accuracy and other informations
