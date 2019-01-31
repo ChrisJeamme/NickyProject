@@ -101,8 +101,21 @@ def predict_test_csv(X_train, y_train, X_test):
 def cross_val(clf,X,y):
     cv = ShuffleSplit(n_splits=5, test_size=0.3, random_state=0)
     pred = cross_val_predict(text_clf, X_train, y_train, cv=5)
-    print(metrics.confusion_matrix(y_train, pred))
+    conf_matrix = metrics.confusion_matrix(y_train, pred)
+    print(conf_matrix)
     print(np.mean(y_train == pred))
+    class_names = ['non-earning','earning']
+    plt.figure()
+    plot_confusion_matrix(conf_matrix, classes=class_names,
+                          title='Confusion matrix, without normalization')
+    
+    # Plot normalized confusion matrix
+    plt.figure()
+    plot_confusion_matrix(conf_matrix, classes=class_names, normalize=True,
+                          title='Normalized confusion matrix')
+    
+    plt.show()
+    
     
 # def classifier_test_accuracy(text_clf, X, y):
 #     sum41 = 0
@@ -127,6 +140,43 @@ def csv_write(y_test):
     test_csv.to_csv(path_or_buf=filename, index=False)
     print("Filled test.csv was created : " + 'project/project/test_'+str(datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))+'.csv')
 
+# --------------#
+### Plot conf ###
+# --------------#
+
+import itertools
+import numpy as np
+import matplotlib.pyplot as plt
+def plot_confusion_matrix(cm, classes,
+                          normalize=False,
+                          title='Confusion matrix',
+                          cmap=plt.cm.Blues):
+
+    if normalize:
+        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+        print("Normalized confusion matrix")
+    else:
+        print('Confusion matrix, without normalization')
+
+    print(cm)
+
+    plt.imshow(cm, interpolation='nearest', cmap=cmap)
+    plt.title(title)
+    plt.colorbar()
+    tick_marks = np.arange(len(classes))
+    plt.xticks(tick_marks, classes, rotation=45)
+    plt.yticks(tick_marks, classes)
+
+    fmt = '.2f' if normalize else 'd'
+    thresh = cm.max() / 2.
+    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+        plt.text(j, i, format(cm[i, j], fmt),
+                 horizontalalignment="center",
+                 color="white" if cm[i, j] > thresh else "black")
+
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+    plt.tight_layout()
 
 # ----------------------#
 ### Classifier choice ###
@@ -186,4 +236,5 @@ if(type == Type.REAL_CSV_SETS):
     csv_write(y_test)
 else:
     print("Accuracy testing ...")
+    
     cross_val(text_clf,X_train,y_train)
