@@ -79,16 +79,21 @@ class DataLoader:
         self.type = test_type
 
     def fit(self,path_to_csv_train,path_to_csv_test):
-        if Type.ARTICLE_SET == self.type:
-            self.X_train,self.y_train = self.csv_convert(path_to_csv_train)
-            self.X_test,self.y_test = self.csv_convert(path_to_csv_test)
-            
+        if Type.REAL_CSV_SETS == self.type:
+            self.X_train, self.y_train = self.csv_convert(path_to_csv_train)
+            self.X_test, self.y_test = self.csv_convert(path_to_csv_test)
+            self.X = None
+            self.y = None
+
+        elif Type.TEST_ON_TRAINING_SET == self.type:
+            self.X, self.y = self.csv_convert(path_to_csv_train)
+            self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.X, self.y)
         else:
             self.type = Type.NONE
             print('Error type')
 
     def get_data(self):
-        return self.X_train,self.y_train,self.X_test,self.y_test
+        return self.X, self.y, self.X_train,self.y_train,self.X_test,self.y_test
     
     def get_train(self):
         return self.X_train,self.y_train
