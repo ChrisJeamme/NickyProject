@@ -26,21 +26,22 @@ from sklearn.model_selection import ShuffleSplit
 
 from sklearn.feature_extraction.text import TfidfTransformer,CountVectorizer,HashingVectorizer,TfidfVectorizer
 
-dataload = DataLoader(Type.ARTICLE_SET)
+##########################
+type = Type.TEST_ON_TRAINING_SET
+##########################
+
+
+if(type == Type.REAL_CSV_SETS):
+    dataload = DataLoader(Type.REAL_CSV_SETS)
+else:
+    dataload = DataLoader(Type.TEST_ON_TRAINING_SET)
+
+# ------------------#
+### Load the data ###
+# ------------------#
+
 dataload.fit("./project/project/train.csv","./project/project/test.csv")
-
-X_train,y_train,X_test,y_test = dataload.get_data()
-# print(len(y_train))
-
-
-count_vect = CountVectorizer()
-X_train_counts = count_vect.fit_transform(X_train)
-
-tf_transformer = TfidfTransformer(use_idf=True).fit(X_train_counts)
-X_train_tf = tf_transformer.transform(X_train_counts)
-
-x_count = count_vect.transform(X_test)
-x_tf = tf_transformer.transform(x_count)
+X, y, X_train, y_train, X_test, y_test = dataload.get_data()
 
 def pipelinize(function, active=True):
     def list_comprehend_a_function(list_or_series, active=True):
@@ -105,26 +106,9 @@ text_clf = Pipeline([
       # ('viz',visualizer),
       ('clf', classifier),])
 
-# text_clf = Pipeline([
-#       ('sub', pipelinize(sub)),
-#       ('tf', tf),
-#       # ('viz',visualizer),
-#       ('clf', classifier),])
-
-# text_clf = Pipeline([
-#      ('sub', pipelinize(sub)),
-#      ('hashvect',HashingVectorizer(tokenizer=my_tokenizer,stop_words='english')),
-#      ('clf', classifier),
-#         ])
     
 from sklearn.pipeline import Pipeline, make_pipeline
 from sklearn import metrics
-
-
-
-#print(count_vect.get_feature_names())
-
-# visualizer.poof()
 
 from sklearn.model_selection import cross_val_score,cross_val_predict
 
@@ -133,44 +117,17 @@ pred = cross_val_predict(text_clf, X_train, y_train, cv=5)
 print(metrics.confusion_matrix(y_train, pred))
 print(np.mean(y_train == pred))
 
-# Decomment to get final result on test data
+#Apply this vectorizer to text to get a sparse matrix of counts
+for x in X_train:
+    x = sub(x)
+    
+count_matrix = count_vect.fit_transform(X_train)
+#Get the names of the features
+features = count_vect.get_feature_names()
+#Create a series from the sparse matrix
+d = pd.Series(count_matrix.toarray().flatten(), 
+              index = features).sort_values(ascending=False)
 
-# text_clf.fit(X_train, y_train)
-# text_clf.predict(X_test)
-
-
-# print(metrics.confusion_matrix(predicted,y_test))
-# print(metrics.classification_report(y_test, predicted))
-# print(np.mean(predicted == y_test))
-# from sklearn.cross_validation import cross_val_score
-# from sklearn.neighbors import KNeighborsClassifier
-# from sklearn.preprocessing import StandardScaler
-
-# results = []
-
-# for n in range(1, 50, 2):
-#    pipe = make_pipeline(StandardScaler(),
-#    KNeighborsClassifier(n_neighbors=n))
-#    c_val = cross_val_score(pipe, X_train, y_train, cv=5, scoring='accuracy').mean()
-#    results.append([n, c_val])
-
-# print(results)
-
-
-# count_vectorizer = CountVectorizer(tokenizer=my_tokenizer,stop_words='english',analyzer='word'
-#                              ,ngram_range=(1, 2)
-#                              ,min_df=1,max_df=0.7
-                             
-#                              ,max_features = 3000
-#                              )
-# #Apply this vectorizer to text to get a sparse matrix of counts
-# count_matrix = count_vectorizer.fit_transform(X_train)
-# #Get the names of the features
-# features = count_vectorizer.get_feature_names()
-# #Create a series from the sparse matrix
-# d = pd.Series(count_matrix.toarray().flatten(), 
-#               index = features).sort_values(ascending=False)
-
-# ax = d[:10].plot(kind='bar', figsize=(10,6), width=.8, fontsize=14, rot=45,
-#             title='Article Word Counts')
-# ax.title.set_size(18)
+ax = d[:10].plot(kind='bar', figsize=(10,6), width=.8, fontsize=14, rot=45,
+            title='Article Word Counts')
+ax.title.set_size(18)

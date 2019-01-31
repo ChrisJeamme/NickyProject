@@ -60,7 +60,6 @@ class Type(Enum):
     NONE = 0 
     REAL_CSV_SETS = 1
     TEST_ON_TRAINING_SET = 2
-    ARTICLE_SET = 3
     
     
 class DataLoader:
@@ -77,6 +76,12 @@ class DataLoader:
     ############
     def __init__(self,test_type):
         self.type = test_type
+        self.X_train = None
+        self.X_test = None
+        self.X = None
+        self.y_train = None
+        self.y_test = None
+        self.y = None
 
     def fit(self,path_to_csv_train,path_to_csv_test):
         if Type.REAL_CSV_SETS == self.type:
@@ -86,8 +91,8 @@ class DataLoader:
             self.y = None
 
         elif Type.TEST_ON_TRAINING_SET == self.type:
-            self.X, self.y = self.csv_convert(path_to_csv_train)
-            self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.X, self.y)
+            self.X_train, self.y_train = self.csv_convert(path_to_csv_train)
+            # self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.X, self.y)
         else:
             self.type = Type.NONE
             print('Error type')

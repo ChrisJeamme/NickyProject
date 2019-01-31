@@ -28,6 +28,9 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.neural_network  import MLPClassifier
 import xgboost as xgb
 
+from sklearn.model_selection import cross_val_score,cross_val_predict
+from sklearn.model_selection import ShuffleSplit
+
 #------------------#
 ### Type of test ###
 #------------------#
@@ -37,7 +40,7 @@ import xgboost as xgb
 # Type.TEST_ON_TRAINING_SET = Test a classifier with a kfold cross validator to get an average accuracy and other informations
 
 ##########################
-type = Type.REAL_CSV_SETS
+type = Type.TEST_ON_TRAINING_SET
 ##########################
 
 
@@ -53,21 +56,7 @@ else:
 dataload.fit("./project/project/train.csv","./project/project/test.csv")
 X, y, X_train, y_train, X_test, y_test = dataload.get_data()
 
-# ---------------------#
-### Cross-validation ###
-# ---------------------#
 
-nb_splits = 5
-kf = KFold(n_splits=nb_splits, shuffle=True)
-
-count_vect = CountVectorizer()
-X_train_counts = count_vect.fit_transform(X_train)
-
-tf_transformer = TfidfTransformer(use_idf=True).fit(X_train_counts)
-X_train_tf = tf_transformer.transform(X_train_counts)
-
-x_count = count_vect.transform(X_test)
-x_tf = tf_transformer.transform(x_count)
 
 # --------------#
 ### Functions ###
@@ -111,16 +100,26 @@ def predict_test_csv(X_train, y_train, X_test):
     predicted = text_clf.predict(X_test)
     return predicted
 
-def classifier_test_accuracy(text_clf, X, y):
-    sum41 = 0
-    for learn,test in kf.split(X):
-        text_clf.fit(X[learn],y[learn])
-        predicted = text_clf.predict(X[test])
-        print(metrics.confusion_matrix(predicted,y[test]))
-        print(metrics.classification_report(y[test], predicted))
-        sum41 += np.mean(predicted == y[test]) 
-        print(np.mean(predicted == y[test]))
-    print('Average accuracy:' + str(sum41/nb_splits))
+# --------------#
+### Cross Val ###
+# --------------#
+
+def cross_val(clf,X,y):
+    cv = ShuffleSplit(n_splits=5, test_size=0.3, random_state=0)
+    pred = cross_val_predict(text_clf, X_train, y_train, cv=5)
+    print(metrics.confusion_matrix(y_train, pred))
+    print(np.mean(y_train == pred))
+    
+# def classifier_test_accuracy(text_clf, X, y):
+#     sum41 = 0
+#     for learn,test in kf.split(X):
+#         text_clf.fit(X[learn],y[learn])
+#         predicted = text_clf.predict(X[test])
+#         print(metrics.confusion_matrix(predicted,y[test]))
+#         print(metrics.classification_report(y[test], predicted))
+#         sum41 += np.mean(predicted == y[test]) 
+#         print(np.mean(predicted == y[test]))
+#     print('Average accuracy:' + str(sum41/nb_splits))
 
 def csv_write(y_test):
     spamwriter = csv.writer(open('test_1.csv', 'w', newline=''), delimiter=' ',quotechar='|', quoting=csv.QUOTE_MINIMAL)
@@ -151,19 +150,18 @@ classifier7 = MLPClassifier(activation='logistic', alpha=0.01, batch_size='auto'
                                 validation_fraction=0.1, verbose=False, warm_start=False)
 
 ##################################
-classifier_choosen = classifier1
+classifier_choosen = classifier2
 ##################################
 
 # ------------------#
 ### Preprocessing ###
 # ------------------#
-
-count_vect = CountVectorizer(tokenizer=my_tokenizer
-                             ,stop_words='english'
+tft = TfidfTransformer(sublinear_tf=True)
+count_vect = CountVectorizer(tokenizer=my_tokenizer,stop_words='english',analyzer='word'
                              ,ngram_range=(1, 3)
-                             ,min_df=1
-                             ,lowercase=True
-                             #,max_features = 20
+                             ,min_df=3,max_df=0.7
+                             ,lowercase = True
+                             #,max_features = 100
                              )
 # ------------------------#
 ### Pipeline definition ###
@@ -172,7 +170,7 @@ count_vect = CountVectorizer(tokenizer=my_tokenizer
 text_clf = Pipeline([
      ('sub', pipelinize(sub)),
      ('vect', count_vect),
-     ('tfidf', TfidfTransformer()),
+     ('tfidf', tft),
     #  ('svd', TruncatedSVD(n_components=50)),
      ('clf', classifier_choosen),])
 
@@ -180,8 +178,9 @@ text_clf = Pipeline([
 ### Processing ###
 # ---------------#
 
+
 if(type == Type.REAL_CSV_SETS):
     y_test = predict_test_csv(X_train, y_train, X_test)
     csv_write(y_test)
 else:
-    classifier_test_accuracy(text_clf, X, y)
+    cross_val(text_clf,X_train,y_train)
