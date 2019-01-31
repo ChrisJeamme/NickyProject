@@ -44,7 +44,6 @@ from sklearn.model_selection import ShuffleSplit
 type = Type.TEST_ON_TRAINING_SET
 ##########################
 
-
 if(type == Type.REAL_CSV_SETS):
     dataload = DataLoader(Type.REAL_CSV_SETS)
 else:
@@ -56,8 +55,6 @@ else:
 
 dataload.fit("./project/project/train.csv","./project/project/test.csv")
 X, y, X_train, y_train, X_test, y_test = dataload.get_data()
-
-
 
 # --------------#
 ### Functions ###
@@ -182,9 +179,10 @@ text_clf = Pipeline([
 ### Processing ###
 # ---------------#
 
-
-if(type == Type.REAL_CSV_SETS):
+if(type == Type.TEST_ON_TRAINING_SET):
+    print("Predicting test.csv ...")
     y_test = predict_test_csv(X_train, y_train, X_test)
     csv_write(y_test)
 else:
+    print("Accuracy testing ...")
     cross_val(text_clf,X_train,y_train)
