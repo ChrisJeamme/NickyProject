@@ -86,7 +86,6 @@ def my_tokenizer(text):
 count_vect = CountVectorizer(tokenizer=my_tokenizer,stop_words='english',analyzer='word'
                              ,ngram_range=(1, 3)
                              ,min_df=3,max_df=0.7
-                             
                              #,max_features = 100
                              )
 tf = TfidfVectorizer(smooth_idf=False, sublinear_tf=False, norm=None, analyzer='word')
@@ -121,7 +120,7 @@ text_clf = Pipeline([
 from sklearn.pipeline import Pipeline, make_pipeline
 from sklearn import metrics
 
-text_clf.fit(X_train, y_train)
+
 
 #print(count_vect.get_feature_names())
 
@@ -133,6 +132,12 @@ cv = ShuffleSplit(n_splits=5, test_size=0.3, random_state=0)
 pred = cross_val_predict(text_clf, X_train, y_train, cv=5)
 print(metrics.confusion_matrix(y_train, pred))
 print(np.mean(y_train == pred))
+
+# Decomment to get final result on test data
+
+# text_clf.fit(X_train, y_train)
+# text_clf.predict(X_test)
+
 
 # print(metrics.confusion_matrix(predicted,y_test))
 # print(metrics.classification_report(y_test, predicted))
