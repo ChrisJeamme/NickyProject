@@ -41,7 +41,7 @@ from sklearn.model_selection import ShuffleSplit
 # Type.TEST_ON_TRAINING_SET = Test a classifier with a kfold cross validator to get an average accuracy and other informations
 
 ##########################
-type = Type.TEST_ON_TRAINING_SET
+type = Type.REAL_CSV_SETS
 ##########################
 
 if(type == Type.REAL_CSV_SETS):
@@ -179,7 +179,7 @@ text_clf = Pipeline([
 ### Processing ###
 # ---------------#
 
-if(type == Type.TEST_ON_TRAINING_SET):
+if(type == Type.REAL_CSV_SETS):
     print("Predicting test.csv ...")
     y_test = predict_test_csv(X_train, y_train, X_test)
     csv_write(y_test)
