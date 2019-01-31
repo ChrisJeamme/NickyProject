@@ -14,25 +14,18 @@ from nltk import pos_tag
 from nltk.tokenize import word_tokenize
 import nltk
 nltk.download('averaged_perceptron_tagger')
-import nltk
 nltk.download('wordnet')
-
-# import en_core_web_sm
-# nlp = en_core_web_sm.load()
-
 from sklearn.pipeline import Pipeline, make_pipeline
 from sklearn import metrics
+from sklearn.feature_extraction.text import TfidfTransformer,CountVectorizer
 from sklearn.preprocessing import FunctionTransformer
 from sklearn.linear_model import SGDClassifier
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
 from sklearn.decomposition import TruncatedSVD
-from sklearn.decomposition import PCA
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neural_network  import MLPClassifier
 import xgboost as xgb
-
-from sklearn.feature_extraction.text import TfidfTransformer,CountVectorizer
 
 #------------------#
 ### Type of test ###
@@ -41,7 +34,11 @@ from sklearn.feature_extraction.text import TfidfTransformer,CountVectorizer
 # type =>
 # Type.REAL_CSV_SETS = Predict the test.csv file
 # Type.TEST_ON_TRAINING_SET = Test a classifier with a kfold cross validator to get an average accuracy and other informations
-type = Type.TEST_ON_TRAINING_SET
+
+##########################
+type = Type.REAL_CSV_SETS
+##########################
+
 
 if(type == Type.REAL_CSV_SETS):
     dataload = DataLoader(Type.REAL_CSV_SETS)
@@ -176,7 +173,6 @@ text_clf = Pipeline([
 #----------------#
 ### Processing ###
 # ---------------#
-
 
 if(type == Type.REAL_CSV_SETS):
     y_test = predict_test_csv(X_train, y_train, X_test)
