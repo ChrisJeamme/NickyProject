@@ -20,27 +20,47 @@ nltk.download('wordnet')
 # import en_core_web_sm
 # nlp = en_core_web_sm.load()
 
+from sklearn.pipeline import Pipeline, make_pipeline
+from sklearn import metrics
 from sklearn.preprocessing import FunctionTransformer
 from sklearn.linear_model import SGDClassifier
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
+from sklearn.decomposition import TruncatedSVD
+from sklearn.decomposition import PCA
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neural_network  import MLPClassifier
 import xgboost as xgb
 
 from sklearn.feature_extraction.text import TfidfTransformer,CountVectorizer
 
-dataload = DataLoader(Type.ARTICLE_SET)
+#------------------#
+### Type of test ###
+#------------------#
+
+# type =>
+# Type.REAL_CSV_SETS = Predict the test.csv file
+# Type.TEST_ON_TRAINING_SET = Test a classifier with a kfold cross validator to get an average accuracy and other informations
+type = Type.TEST_ON_TRAINING_SET
+
+if(type == Type.REAL_CSV_SETS):
+    dataload = DataLoader(Type.REAL_CSV_SETS)
+else:
+    dataload = DataLoader(Type.TEST_ON_TRAINING_SET)
+
+# ------------------#
+### Load the data ###
+# ------------------#
+
 dataload.fit("./project/project/train.csv","./project/project/test.csv")
+X, y, X_train, y_train, X_test, y_test = dataload.get_data()
 
-X,y,X_test,y_test = dataload.get_data()
+# ---------------------#
+### Cross-validation ###
+# ---------------------#
 
-X_train, X_test, y_train, y_test = train_test_split(X, y)
-
-### Cross validation
-nb_splits = 5
+nb_splits = 20
 kf = KFold(n_splits=nb_splits, shuffle=True)
-
 
 count_vect = CountVectorizer()
 X_train_counts = count_vect.fit_transform(X_train)
@@ -51,6 +71,10 @@ X_train_tf = tf_transformer.transform(X_train_counts)
 x_count = count_vect.transform(X_test)
 x_tf = tf_transformer.transform(x_count)
 
+# --------------#
+### Functions ###
+# --------------#
+
 def pipelinize(function, active=True):
     def list_comprehend_a_function(list_or_series, active=True):
         if active:
@@ -60,17 +84,22 @@ def pipelinize(function, active=True):
     return FunctionTransformer(list_comprehend_a_function, validate=False, kw_args={'active':active})
 
 def sub(x):
-    
     x = x.replace('\n',' ')
     x = re.sub('\d+,\d+|\d+.\d+|\d+', '#num ', x)
     x = x.replace('/','')
     x = x.replace('+','')
     x = x.replace('.','')
     x = x.replace(',','')
+    x = x.replace('``','')
+    x = x.replace('"','')
+    x = x.replace('<','')
+    x = x.replace('>','')
+    x = x.replace('(','')
+    x = x.replace(')','')
+    x = x.replace('yr-ago','year ago')
     x = re.sub(r'(\#num)+', '#num', x)
     x = re.sub(r'[Nn]ew[ -][Yy]ork','NY',x)
     return x
-
 
 # tokenize the doc and lemmatize its tokens
 def my_tokenizer(text):
@@ -79,21 +108,37 @@ def my_tokenizer(text):
     tokens = list(map(lem.lemmatize_tagged_token, tagged))
     return(tokens) 
 
-count_vect = CountVectorizer(tokenizer=my_tokenizer
-                             ,stop_words='english'
-                             ,ngram_range=(1, 2)
-                             ,min_df=1
-                             #,max_features = 20
-                             )
+def predict_test_csv(X_train, y_train, X_test):
+    text_clf.fit(X_train, y_train)
+    predicted = text_clf.predict(X_test)
+    return predicted
 
-# classifier = SGDClassifier(loss='hinge', penalty='l2',
-#                            alpha=1e-3, random_state=42,
-#                            max_iter=5, tol=None)
-# classifier = MultinomialNB()
-# classifier = svm.SVC(kernel="linear")
-# classifier = RandomForestClassifier(criterion="entropy")
-# classifier = xgb.XGBClassifier(booster="gbtree")
-classifier = MLPClassifier(activation='logistic', alpha=0.01, batch_size='auto',
+def classifier_test_accuracy(text_clf, X, y):
+    sum41 = 0
+    for learn,test in kf.split(X):
+        text_clf.fit(X[learn],y[learn])
+        predicted = text_clf.predict(X[test])
+        print(metrics.confusion_matrix(predicted,y[test]))
+        print(metrics.classification_report(y[test], predicted))
+        sum41 += np.mean(predicted == y[test]) 
+        print(np.mean(predicted == y[test]))
+    print('Average accuracy:' + str(sum41/nb_splits))
+
+# ----------------------#
+### Classifier choice ###
+# ----------------------#
+
+classifier1 = SGDClassifier(max_iter=5, tol=None)
+classifier2 = SGDClassifier(alpha=0.0001, average=False, class_weight=None,
+                            epsilon=0.1, eta0=0.0, fit_intercept=True,
+                            l1_ratio=0.15, learning_rate='optimal', loss='hinge', max_iter=10,
+                            n_iter=None, penalty='l2',
+                            power_t=0.5, random_state=None, shuffle=False, tol=0.0001, verbose=0, warm_start=False)
+classifier3 = MultinomialNB()
+classifier4 = svm.SVC(kernel="linear")
+classifier5 = RandomForestClassifier(criterion="entropy")
+classifier6 = xgb.XGBClassifier(booster="gbtree")
+classifier7 = MLPClassifier(activation='logistic', alpha=0.01, batch_size='auto',
                                 beta_1=0.9, beta_2=0.999, early_stopping=False,
                                 epsilon=1e-01, hidden_layer_sizes=(2,2),
                                 learning_rate='constant', learning_rate_init=0.01,
@@ -102,41 +147,39 @@ classifier = MLPClassifier(activation='logistic', alpha=0.01, batch_size='auto',
                                 shuffle=True, solver='lbfgs', tol=0.0001,
                                 validation_fraction=0.1, verbose=False, warm_start=False)
 
+##################################
+classifier_choosen = classifier1
+##################################
+
+# ------------------#
+### Preprocessing ###
+# ------------------#
+
+count_vect = CountVectorizer(tokenizer=my_tokenizer
+                             ,stop_words='english'
+                             ,ngram_range=(1, 3)
+                             ,min_df=1
+                             ,lowercase=True
+                             #,max_features = 20
+                             )
+# ------------------------#
+### Pipeline definition ###
+# ------------------------#
+
 text_clf = Pipeline([
      ('sub', pipelinize(sub)),
      ('vect', count_vect),
      ('tfidf', TfidfTransformer()),
-     ('clf', classifier),])
+    #  ('svd', TruncatedSVD(n_components=50)),
+     ('clf', classifier_choosen),])
 
-# print(y_test)
-from sklearn.pipeline import Pipeline, make_pipeline
-from sklearn import metrics
+#----------------#
+### Processing ###
+# ---------------#
 
-# text_clf.fit(X_train, y_train) 
 
-sum41 = 0
-for learn,test in kf.split(X):
-    text_clf.fit(X[learn],y[learn])
-    predicted = text_clf.predict(X[test])
-    print(metrics.confusion_matrix(predicted,y[test]))
-    print(metrics.classification_report(y[test], predicted))
-    sum41 += np.mean(predicted == y[test]) 
-    print(np.mean(predicted == y[test]))
-
-print('Average precision:' + str(sum41/nb_splits))
-# print(count_vect.get_feature_names())
-#confusion_matrix = train_test_and_evaluate(text_clf, X_train, y_train, X_test, y_test)
-
-# from sklearn.cross_validation import cross_val_score
-# from sklearn.neighbors import KNeighborsClassifier
-# from sklearn.preprocessing import StandardScaler
-
-# results = []
-
-# for n in range(1, 50, 2):
-#    pipe = make_pipeline(StandardScaler(),
-#    KNeighborsClassifier(n_neighbors=n))
-#    c_val = cross_val_score(pipe, X_train, y_train, cv=5, scoring='accuracy').mean()
-#    results.append([n, c_val])
-
-# print(results)
+if(type == Type.REAL_CSV_SETS):
+    y_test = predict_test_csv(X_train, y_train, X_test)
+    print(y_test)
+else:
+    classifier_test_accuracy(text_clf, X, y)
