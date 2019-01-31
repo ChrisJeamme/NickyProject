@@ -93,10 +93,10 @@ count_vect = CountVectorizer(tokenizer=my_tokenizer
 # classifier = svm.SVC(kernel="linear")
 # classifier = RandomForestClassifier(criterion="entropy")
 # classifier = xgb.XGBClassifier(booster="gbtree")
-classifier = MLPClassifier(activation='logistic', alpha=1e-02, batch_size='auto',
+classifier = MLPClassifier(activation='logistic', alpha=0.01, batch_size='auto',
                                 beta_1=0.9, beta_2=0.999, early_stopping=False,
-                                epsilon=1e-02, hidden_layer_sizes=(2, 2),
-                                learning_rate='constant', learning_rate_init=0.001,
+                                epsilon=1e-01, hidden_layer_sizes=(2,2),
+                                learning_rate='constant', learning_rate_init=0.01,
                                 max_iter=200, momentum=0.9,
                                 nesterovs_momentum=True, power_t=0.5, random_state=1,
                                 shuffle=True, solver='lbfgs', tol=0.0001,
