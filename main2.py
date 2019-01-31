@@ -1,6 +1,7 @@
 from data_loader import DataLoader
 from data_loader import Type
 
+import csv
 import pandas as pd
 import numpy as np
 import re
@@ -121,6 +122,11 @@ def classifier_test_accuracy(text_clf, X, y):
         print(np.mean(predicted == y[test]))
     print('Average accuracy:' + str(sum41/nb_splits))
 
+def csv_write(y_test):
+    spamwriter = csv.writer(open('test_1.csv', 'w', newline=''), delimiter=' ',quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    for value in y_test:
+        spamwriter.writerow(str(value))
+
 # ----------------------#
 ### Classifier choice ###
 # ----------------------#
@@ -176,6 +182,6 @@ text_clf = Pipeline([
 
 if(type == Type.REAL_CSV_SETS):
     y_test = predict_test_csv(X_train, y_train, X_test)
-    print(y_test)
+    csv_write(y_test)
 else:
     classifier_test_accuracy(text_clf, X, y)
