@@ -70,7 +70,7 @@ else:
 ### Load the data ###
 # ------------------#
 
-dataload.fit("./project/project/train.csv","./project/project/test.csv")
+dataload.fit("./train.csv","./test.csv")
 X, y, X_train, y_train, X_test, y_test = dataload.get_data()
 
 # --------------#
@@ -145,16 +145,16 @@ def cross_val(clf,X,y):
 #     print('Average accuracy:' + str(sum41/nb_splits))
 
 def csv_write(y_test):
-    test_csv = pd.read_csv('project/project/test.csv','r', delimiter=",")
+    test_csv = pd.read_csv('./test.csv','r', delimiter=",")
 
     for i, line in enumerate(test_csv.values):
         test_csv.at[i,test_csv.columns[2]] = y_test[i]
 
     test_csv[test_csv.columns[2]] =test_csv[test_csv.columns[2]].astype(int)
 
-    filename = 'project/project/test_'+str(datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))+'.csv'
+    filename = './test_'+str(datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))+'.csv'
     test_csv.to_csv(path_or_buf=filename, index=False)
-    print("Filled test.csv was created : " + 'project/project/test_'+str(datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))+'.csv')
+    print("Filled test.csv was created : " + filename)
 
 # --------------#
 ### Plot conf ###
