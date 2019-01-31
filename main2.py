@@ -121,8 +121,10 @@ def csv_write(y_test):
     for i, line in enumerate(test_csv.values):
         test_csv.at[i,'earnings'] = y_test[i]
         
+    test_csv['earnings'] =test_csv['earnings'].astype(int)
+
     filename = 'project/project/test_'+str(datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))+'.csv'
-    test_csv.to_csv(path_or_buf=filename)
+    test_csv.to_csv(path_or_buf=filename, index=False)
     print("Filled test.csv was created : " + 'project/project/test_'+str(datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))+'.csv')
 
 
