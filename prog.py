@@ -43,7 +43,7 @@ def get_xml_text(filename):
 
     if len(itemlist) != 1:
         print('Error: XML file invalid')
-        sys.exit(0)
+        exit(-1)
     try :
         text = itemlist[0].childNodes[0].nodeValue
     except :
@@ -144,8 +144,8 @@ class ArticlePredictorBase:
         the_set['file_name'] = list(set_x)
         the_set['deleted_stop_words'] = list(None for _ in range(the_set['file_name'].size))
         
-        rover=0
-        for i in range(rover,the_set['file_name'].size//reduce_item_number):
+        tachambre=0
+        for i in range(tachambre,the_set['file_name'].size//reduce_item_number):
             # Path to the file of this element
             file_path = 'project/project/data/'+str(the_set['file_name'][i])
             # Content of the BODY element in the file
@@ -196,7 +196,7 @@ class ArticlePredictorBase:
         print("(Testing Launched)")
         if self.type is None:
             print("Initialisation error ")
-            raise
+            exit(-1)
 
         test_x, test_y = self.preprocess(self.test_x, self.test_y)
         #TODO testing
@@ -205,7 +205,7 @@ class ArticlePredictorBase:
         print("(Training Launched)")
         if self.type is None:
             print("Initialisation error ")
-            raise
+            exit(-1)
             
         print(str(self.train_x.size)+" elements in the training set")
         train_x, train_y = self.preprocess(self.train_x, self.train_y)        
