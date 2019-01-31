@@ -89,7 +89,7 @@ count_vect = CountVectorizer(tokenizer=my_tokenizer,stop_words='english',analyze
                              #,max_features = 100
                              )
 tf = TfidfVectorizer(smooth_idf=False, sublinear_tf=False, norm=None, analyzer='word')
-tf = TfidfVectorizer(strip_accents='unicode', tokenizer=my_tokenizer, ngram_range=(1, 2), max_df=0.9, min_df=3, sublinear_tf=True)
+tf = TfidfVectorizer(strip_accents='unicode',stop_words='english', tokenizer=my_tokenizer, ngram_range=(1, 3), max_df=0.7, min_df=3, sublinear_tf=True)
 tft = TfidfTransformer(sublinear_tf=True)
 classifier = SGDClassifier(alpha=0.0001, average=False, class_weight=None,
        early_stopping=False, epsilon=0.1, eta0=0.0, fit_intercept=True,
